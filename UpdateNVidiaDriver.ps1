@@ -221,7 +221,7 @@ function UpdateNVidiaDriver
 	$Node.ParentNode.RemoveChild($Node)
 	$Node = $Config.SelectSingleNode("//file[@name='`${{PrivacyPolicyFile}}']")
 	$Node.ParentNode.RemoveChild($Node)
-	$Config.Save("D:\Downloads\NVidia\setup.cfg")
+	$Config.Save("$DownloadsFolder\NVidia\setup.cfg")
 
 	# Re-save in the UTF-8 without BOM encoding to make it work
 	Set-Content -Value (New-Object -TypeName System.Text.UTF8Encoding -ArgumentList $false).GetBytes($(Get-Content -Path "$DownloadsFolder\NVidia\setup.cfg" -Raw)) -Encoding Byte -Path "$DownloadsFolder\NVidia\setup.cfg" -Force
