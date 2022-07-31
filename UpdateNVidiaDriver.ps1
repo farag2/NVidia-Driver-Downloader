@@ -8,6 +8,9 @@
 	.EXAMPLE
 	UpdateNVidiaDriver
 
+	.NOTES
+	Supports Windows 10 x64 & Windows 11 only
+
 	.EXAMPLE
 	UpdateNVidiaDriver -Clean
 #>
@@ -121,7 +124,7 @@ function UpdateNVidiaDriver
 		}
 		catch [System.Net.WebException]
 		{
-			Write-Warning -Message "nvidia.com is down"
+			Write-Warning -Message "sourceforge.net is down"
 			exit
 		}
 	}
@@ -168,8 +171,8 @@ function UpdateNVidiaDriver
 		{
 			# Downloading installer
 			$Parameters = @{
-				Uri             = "https://international.download.nvidia.com/Windows/$version/$version-desktop-win10-win11-64bit-international-dch-whql.exe"
-				OutFile         = "$DownloadsFolder\NVidia$version-desktop-win10-win11-64bit-international-dch-whql.exe"
+				Uri             = "https://international.download.nvidia.com/Windows/$LatestVersion/$LatestVersion-desktop-win10-win11-64bit-international-dch-whql.exe"
+				OutFile         = "$DownloadsFolder\NVidia$LatestVersion-desktop-win10-win11-64bit-international-dch-whql.exe"
 				UseBasicParsing = $true
 				Verbose         = $true
 			}
