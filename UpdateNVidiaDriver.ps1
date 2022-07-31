@@ -40,8 +40,6 @@ function UpdateNVidiaDriver
 		exit
 	}
 
-	[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-
 	if (Test-Path -Path "$env:SystemRoot\System32\DriverStore\FileRepository\nv_*\nvidia-smi.exe")
 	{
 		# The NVIDIA System Management Interface (nvidia-smi) is a command line utility, based on top of the NVIDIA Management Library (NVML)
@@ -53,6 +51,8 @@ function UpdateNVidiaDriver
 		Write-Warning -Message "Cannot find nvidia-smi.exe required file"
 		exit
 	}
+
+	[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
 	# Checking latest driver version from Nvidia website
 	$Parameters = @{
