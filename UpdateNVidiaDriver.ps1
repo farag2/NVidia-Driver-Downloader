@@ -204,7 +204,7 @@ function UpdateNVidiaDriver
 		# Overwrite All existing files without prompt
 		"-aoa",
 		# What to extract
-		"$DownloadsFolder\NVidia$version-desktop-win10-win11-64bit-international-dch-whql.exe",
+		"$DownloadsFolder\NVidia$LatestVersion-desktop-win10-win11-64bit-international-dch-whql.exe",
 		# Extract these files and folders
 		"Display.Driver HDAudio NVI2 PhysX EULA.txt ListDevices.txt setup.cfg setup.exe",
 		# Specifies a destination directory where files are to be extracted
@@ -240,7 +240,7 @@ function UpdateNVidiaDriver
 	Start-Process -FilePath "$DownloadsFolder\NVidia\setup.exe" -ArgumentList $Arguments -Wait
 
 	$Parameters = @{
-		Path    = "$DownloadsFolder\7zip", "$DownloadsFolder\NVidia", "$DownloadsFolder\NVidia$version-desktop-win10-win11-64bit-international-dch-whql.exe"
+		Path    = "$DownloadsFolder\7zip", "$DownloadsFolder\NVidia", "$DownloadsFolder\NVidia$LatestVersion-desktop-win10-win11-64bit-international-dch-whql.exe"
 		Recurse = $true
 		Force   = $true
 	}
