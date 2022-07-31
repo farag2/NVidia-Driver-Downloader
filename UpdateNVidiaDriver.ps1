@@ -68,24 +68,19 @@ function UpdateNVidiaDriver
 
 	# https://github.com/fyr77/EnvyUpdate/wiki/Nvidia-API
 	# osid=57 — Windows x64/Windows 11
-	# lid=1 — English language
+	# lid=1033 — English language
 	# dtcid=1 — DCH drivers
 	# https://nvidia.custhelp.com/app/answers/detail/a_id/4777/~/nvidia-dch%2Fstandard-display-drivers-for-windows-10-faq
 	# dtid=1 — GRD (Game Ready Driver)
-	# https://www.nvidia.com/Download/processFind.aspx?psid=$ParentID&pfid=$Value&osid=57&lid=1&dtcid=1&dtid=1 as a backup URL to parse
 	$Parameters = @{
-		Uri             = "https://www.nvidia.com/Download/processDriver.aspx?psid=$ParentID&pfid=$Value&osid=57&lid=1&dtcid=1&dtid=1"
+		Uri             = "https://gfwsl.geforce.com/services_toolkit/services/com/nvidia/services/AjaxDriverService.php?func=DriverManualLookup&psid=$ParentID&pfid=$Value&osID=57&languageCode=1033&isWHQL=1&dch=1"
 		UseBasicParsing = $true
 	}
-	$TargetLink = (Invoke-WebRequest @Parameters).Content
+	$Data = Invoke-RestMethod @Parameters
 
-	$Parameters = @{
-		Uri             = $TargetLink
-		UseBasicParsing = $true
-	}
-	if ([xml]$outerHTML = (Invoke-WebRequest @Parameters).Links.outerHTML | Select-String -Pattern "Game Ready Driver Release Notes")
+	if ($Data.IDS.downloadInfo.Version)
 	{
-		$LatestVersion = $outerHTML.a.title.Split(' ')[-1].replace("v", "")
+		$LatestVersion = $Data.IDS.downloadInfo.Version
 		Write-Verbose -Message "Latest version: $LatestVersion" -Verbose
 	}
 	else
@@ -171,8 +166,8 @@ function UpdateNVidiaDriver
 		{
 			# Downloading installer
 			$Parameters = @{
-				Uri             = "https://international.download.nvidia.com/Windows/$LatestVersion/$LatestVersion-desktop-win10-win11-64bit-international-dch-whql.exe"
-				OutFile         = "$DownloadsFolder\NVidia$LatestVersion-desktop-win10-win11-64bit-international-dch-whql.exe"
+				Uri             = $Data.IDS.downloadInfo.DownloadURL
+				OutFile         = "$DownloadsFolder\$LatestVersion-desktop-win10-win11-64bit-international-dch-whql.exe"
 				UseBasicParsing = $true
 				Verbose         = $true
 			}
@@ -204,7 +199,7 @@ function UpdateNVidiaDriver
 		# Overwrite All existing files without prompt
 		"-aoa",
 		# What to extract
-		"$DownloadsFolder\NVidia$LatestVersion-desktop-win10-win11-64bit-international-dch-whql.exe",
+		"$DownloadsFolder\$LatestVersion-desktop-win10-win11-64bit-international-dch-whql.exe",
 		# Extract these files and folders
 		"Display.Driver HDAudio NVI2 PhysX EULA.txt ListDevices.txt setup.cfg setup.exe",
 		# Specifies a destination directory where files are to be extracted
@@ -240,7 +235,7 @@ function UpdateNVidiaDriver
 	Start-Process -FilePath "$DownloadsFolder\NVidia\setup.exe" -ArgumentList $Arguments -Wait
 
 	$Parameters = @{
-		Path    = "$DownloadsFolder\7zip", "$DownloadsFolder\NVidia", "$DownloadsFolder\NVidia$LatestVersion-desktop-win10-win11-64bit-international-dch-whql.exe"
+		Path    = "$DownloadsFolder\7zip", "$DownloadsFolder\NVidia", "$DownloadsFolder\$LatestVersion-desktop-win10-win11-64bit-international-dch-whql.exe"
 		Recurse = $true
 		Force   = $true
 	}
