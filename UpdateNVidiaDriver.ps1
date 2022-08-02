@@ -67,13 +67,13 @@ function UpdateNVidiaDriver
 	$Value = ($Content.LookupValueSearch.LookupValues.LookupValue | Where-Object -FilterScript {$_.Name -contains $CardModelName}).Value
 
 	# https://github.com/fyr77/EnvyUpdate/wiki/Nvidia-API
-	# osid=57 — Windows x64/Windows 11
-	# lid=1033 — English language
-	# dtcid=1 — DCH drivers
+	# osID=57 — Windows x64/Windows 11
+	# languageCode=1033 — English language
+	# dch=1 — DCH drivers
 	# https://nvidia.custhelp.com/app/answers/detail/a_id/4777/~/nvidia-dch%2Fstandard-display-drivers-for-windows-10-faq
-	# dtid=1 — GRD (Game Ready Driver)
+	# upCRD=0 — Game Ready Driver
 	$Parameters = @{
-		Uri             = "https://gfwsl.geforce.com/services_toolkit/services/com/nvidia/services/AjaxDriverService.php?func=DriverManualLookup&psid=$ParentID&pfid=$Value&osID=57&languageCode=1033&isWHQL=1&dch=1"
+		Uri             = "https://gfwsl.geforce.com/services_toolkit/services/com/nvidia/services/AjaxDriverService.php?func=DriverManualLookup&psid=$ParentID&pfid=$Value&osID=57&languageCode=1033&beta=null&isWHQL=1&dltype=-1&dch=1&upCRD=0"
 		UseBasicParsing = $true
 	}
 	$Data = Invoke-RestMethod @Parameters
