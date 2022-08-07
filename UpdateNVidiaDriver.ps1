@@ -239,5 +239,5 @@ function UpdateNVidiaDriver
 		Recurse = $true
 		Force   = $true
 	}
-	Remove-Item @Parameters
+	# Remove-Item @Parameters
 }
