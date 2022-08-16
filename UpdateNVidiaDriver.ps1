@@ -230,6 +230,7 @@ function UpdateNVidiaDriver
 	$Arguments = @("-passive", "-noreboot", "-noeula", "-nofinish")
 	if ($Clean)
 	{
+		# Clean installation
 		$Arguments = @("-passive", "-noreboot", "-noeula", "-nofinish", "-clean")
 	}
 	Start-Process -FilePath "$DownloadsFolder\NVidia\setup.exe" -ArgumentList $Arguments -Wait
@@ -239,5 +240,5 @@ function UpdateNVidiaDriver
 		Recurse = $true
 		Force   = $true
 	}
-	# Remove-Item @Parameters
+	Remove-Item @Parameters
 }
