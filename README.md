@@ -1,5 +1,5 @@
-# NVidia Driver Update
-Update NVidia driver easily than ever
+# NVidia Driver Downloader
+Download the latest NVidia driver easily than ever
 
 ## Usage
 
