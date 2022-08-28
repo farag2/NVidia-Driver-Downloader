@@ -1,6 +1,6 @@
 <#
 	.SYNOPSIS
-	Check for the latest NVIdia driver version, and if it's lower than the current one download, expand and run installe
+	Check for the latest NVIdia driver version, and if it's lower than the current one download
 
 	.PARAMETER Clean
 	Delete the old driver, reset settings and install the newest one
@@ -226,19 +226,27 @@ function UpdateNVidiaDriver
 	# Re-save in the UTF-8 without BOM encoding to make it work
 	Set-Content -Value (New-Object -TypeName System.Text.UTF8Encoding -ArgumentList $false).GetBytes($(Get-Content -Path "$DownloadsFolder\NVidia\setup.cfg" -Raw)) -Encoding Byte -Path "$DownloadsFolder\NVidia\setup.cfg" -Force
 
-	# Installing drivers
 	$Arguments = @("-passive", "-noreboot", "-noeula", "-nofinish")
 	if ($Clean)
 	{
 		# Clean installation
 		$Arguments = @("-passive", "-noreboot", "-noeula", "-nofinish", "-clean")
 	}
-	Start-Process -FilePath "$DownloadsFolder\NVidia\setup.exe" -ArgumentList $Arguments -Wait
+
+	# Create a batch file
+	$Setupcmd = @"
+`"%~dp0setup.exe`" $($Arguments)
+"@
+	Set-Content -Path "$DownloadsFolder\NVidia\setup.cmd" -Value $Setupcmd -Encoding Default -Force
 
 	$Parameters = @{
-		Path    = "$DownloadsFolder\7zip", "$DownloadsFolder\NVidia", "$DownloadsFolder\$LatestVersion-desktop-win10-win11-64bit-international-dch-whql.exe"
+		Path    = "$DownloadsFolder\7zip", "$DownloadsFolder\$LatestVersion-desktop-win10-win11-64bit-international-dch-whql.exe"
 		Recurse = $true
 		Force   = $true
 	}
 	Remove-Item @Parameters
+
+	Invoke-Item -Path "$DownloadsFolder\NVidia"
+
+	Write-Warning -Message "Run `"DownloadsFolder\NVidia\setup.cmd`" as administrator to install downloaded NVidia driver"
 }
