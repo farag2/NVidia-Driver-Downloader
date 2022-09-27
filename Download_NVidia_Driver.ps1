@@ -248,5 +248,5 @@ function UpdateNVidiaDriver
 
 	Invoke-Item -Path "$DownloadsFolder\NVidia"
 
-	Write-Warning -Message "Run `"DownloadsFolder\NVidia\setup.cmd`" as administrator to install downloaded NVidia driver"
+	Write-Warning -Message "Run `"$DownloadsFolder\NVidia\setup.cmd`" as administrator to install downloaded NVidia driver"
 }
