@@ -26,6 +26,8 @@ function UpdateNVidiaDriver
 		$Clean
 	)
 
+	Clear-Host
+
 	# Checking Windows version
 	if ([System.Version][Environment]::OSVersion.Version.ToString() -lt [System.Version]"10.0")
 	{
@@ -45,7 +47,7 @@ function UpdateNVidiaDriver
 		# The NVIDIA System Management Interface (nvidia-smi) is a command line utility, based on top of the NVIDIA Management Library (NVML)
 		$CurrentDriverVersion = nvidia-smi.exe --format=csv,noheader --query-gpu=driver_version
 	}
-	elseif
+	else
 	{
 		[System.Version]$Driver = (Get-CimInstance -ClassName Win32_VideoController | Where-Object -FilterScript {$_.Name -match "NVIDIA"}).DriverVersion
 		$CurrentDriverVersion = ("{0}{1}" -f $Driver.Build, $Driver.Revision).Substring(1).Insert(3,'.')
