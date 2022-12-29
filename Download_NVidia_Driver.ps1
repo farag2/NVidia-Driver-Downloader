@@ -253,3 +253,4 @@ function UpdateNVidiaDriver
 
 	Write-Warning -Message "Run `"$DownloadsFolder\NVidia\setup.cmd`" as administrator to install downloaded NVidia driver"
 }
+UpdateNVidiaDriver
