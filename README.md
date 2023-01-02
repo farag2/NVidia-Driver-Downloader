@@ -10,8 +10,8 @@ Download the latest NVidia driver easily than ever
 
 ## Addendum
 
-* The script provides the feature to determine your current NVidia videocard and search for the latest available driver for your card only by parsing the NVidia cloud JSON—not only the latest driver version which is presented on the NVidia DB;
-* Downloads always latest 7-Zip version automatically by parsing the SourceForge cloud JSON, expands .MSI as a portable app and run it. After expanding NVidia setup, 7-Zip will be removed.
+* The script provides the feature to determine your current NVidia videocard and searches for the latest available driver for your card only by parsing the NVidia cloud JSON—not only the latest driver version which is presented on the NVidia DB;
+* Downloads always latest 7-Zip version automatically by parsing the SourceForge cloud JSON, expands .MSI as a `portable app without installation` and run it. After creating NVidia setup, 7-Zip will be removed.
 
 ## Links
 
