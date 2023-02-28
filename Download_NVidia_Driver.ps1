@@ -229,11 +229,14 @@ function UpdateNVidiaDriver
 	# Re-save in the UTF-8 without BOM encoding to make it work
 	Set-Content -Value (New-Object -TypeName System.Text.UTF8Encoding -ArgumentList $false).GetBytes($(Get-Content -Path "$DownloadsFolder\NVidia\setup.cfg" -Raw)) -Encoding Byte -Path "$DownloadsFolder\NVidia\setup.cfg" -Force
 
-	$Arguments = @("-passive", "-noreboot", "-noeula", "-nofinish")
 	if ($Clean)
 	{
 		# Clean installation
 		$Arguments = @("-passive", "-noreboot", "-noeula", "-nofinish", "-clean")
+	}
+	else
+	{
+		$Arguments = @("-passive", "-noreboot", "-noeula", "-nofinish")
 	}
 
 	# Create a batch file
