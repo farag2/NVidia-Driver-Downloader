@@ -153,39 +153,16 @@ function UpdateNVidiaDriver
 	# Delete the installer once it completes
 	Remove-Item -Path "$DownloadsFolder\7Zip.msi" -Force
 
-	# Check if the current module version is the latest one
-	try
+	if (-not (Test-Path -Path "$DownloadsFolder\$LatestVersion-desktop-win10-win11-64bit-international-dch-whql.exe"))
 	{
-		# Check the internet connection
+		# Downloading installer
 		$Parameters = @{
-			Uri              = "https://www.google.com"
-			Method           = "Head"
-			DisableKeepAlive = $true
-			UseBasicParsing  = $true
+			Uri             = $Data.IDS.downloadInfo.DownloadURL
+			OutFile         = "$DownloadsFolder\$LatestVersion-desktop-win10-win11-64bit-international-dch-whql.exe"
+			UseBasicParsing = $true
+			Verbose         = $true
 		}
-		Invoke-WebRequest @Parameters | Out-Null
-
-		try
-		{
-			# Downloading installer
-			$Parameters = @{
-				Uri             = $Data.IDS.downloadInfo.DownloadURL
-				OutFile         = "$DownloadsFolder\$LatestVersion-desktop-win10-win11-64bit-international-dch-whql.exe"
-				UseBasicParsing = $true
-				Verbose         = $true
-			}
-			Invoke-WebRequest @Parameters
-		}
-		catch [System.Net.WebException]
-		{
-			Write-Warning -Message "nvidia.com is down"
-			exit
-		}
-	}
-	catch [System.Net.WebException]
-	{
-		Write-Warning -Message "No Internet connection"
-		exit
+		Invoke-WebRequest @Parameters
 	}
 
 	# Extracting installer
@@ -256,4 +233,5 @@ function UpdateNVidiaDriver
 
 	Write-Warning -Message "Run `"$DownloadsFolder\NVidia\setup.cmd`" as administrator to install downloaded NVidia driver"
 }
-UpdateNVidiaDriver
+
+UpdateNVidiaDriver -Clean
