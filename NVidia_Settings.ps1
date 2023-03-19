@@ -1,5 +1,5 @@
 # Turn off services
-Get-Service -ServiceName NvTelemetryContainer | Stop-Service | Set-Service -StartupType Manual
+Get-Service -Name NvTelemetryContainer | Stop-Service | Set-Service -StartupType Manual
 
 # Remove diagnostics tracking scheduled tasks
 Unregister-ScheduledTask -TaskName NvProfile*, NvTmMon*, NvTmRep* -Confirm:$false
@@ -8,7 +8,7 @@ Unregister-ScheduledTask -TaskName NvProfile*, NvTmMon*, NvTmRep* -Confirm:$fals
 Remove-Item -Path $env:SystemRoot\NvContainerRecovery.bat, $env:SystemRoot\NvTelemetryContainerRecovery.bat -Force -ErrorAction Ignore
 
 # Turn off Nvidia control panel
-Get-Service -ServiceName NVDisplay.ContainerLocalSystem | Stop-Service | Set-Service -StartupType Manual
+Get-Service -Name NVDisplay.ContainerLocalSystem | Stop-Service | Set-Service -StartupType Manual
 Stop-Process -Name NVDisplay.Container -Force
 
 # Turn off Ansel
