@@ -57,6 +57,13 @@ function UpdateNVidiaDriver
 
 	[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
+	if ($Host.Version.Major -eq 5)
+	{
+		# Progress bar can significantly impact cmdlet performance
+		# https://github.com/PowerShell/PowerShell/issues/2138
+		$Script:ProgressPreference = "SilentlyContinue"
+	}
+
 	# Checking latest driver version from Nvidia website
 	$Parameters = @{
 		Uri             = "https://www.nvidia.com/Download/API/lookupValueSearch.aspx?TypeID=3"
