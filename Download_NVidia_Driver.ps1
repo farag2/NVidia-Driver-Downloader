@@ -53,7 +53,7 @@ function UpdateNVidiaDriver
 		$CurrentDriverVersion = ("{0}{1}" -f $Driver.Build, $Driver.Revision).Substring(1).Insert(3,'.')
 	}
 
-	Write-Verbose -Message "Current version: $CurrentDriverVersion" -Verbose
+	Write-Verbose -Message "`nCurrent version: $CurrentDriverVersion" -Verbose
 
 	[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
@@ -70,7 +70,13 @@ function UpdateNVidiaDriver
 		UseBasicParsing = $true
 	}
 	[xml]$Content = (Invoke-WebRequest @Parameters).Content
-	$CardModelName = (Get-CimInstance -ClassName CIM_VideoController | Where-Object -FilterScript {$_.AdapterDACType -notmatch "Internal"}).Caption.Split(" ")
+	$CardModelName = (Get-CimInstance -ClassName CIM_VideoController | Where-Object -FilterScript {($_.AdapterDACType -notmatch "Internal") -and ($_.Status -eq "OK")}).Caption.Split(" ")
+ 	if (-not $CardModelName)
+  	{
+   		Write-Verbose -Message "There's no active videocard in system" -Verbose
+     		exit
+     	}
+
 	# Remove the first word in full model name. E.g. "NVIDIA"
 	$CardModelName = [string]$CardModelName[1..($CardModelName.Count)]
 	$ParentID = ($Content.LookupValueSearch.LookupValues.LookupValue | Where-Object -FilterScript {$_.Name -contains $CardModelName}).ParentID | Select-Object -First 1
@@ -91,7 +97,7 @@ function UpdateNVidiaDriver
 	if ($Data.IDS.downloadInfo.Version)
 	{
 		$LatestVersion = $Data.IDS.downloadInfo.Version
-		Write-Verbose -Message "Latest version: $LatestVersion" -Verbose
+		Write-Verbose -Message "`nLatest version: $LatestVersion" -Verbose
 	}
 	else
 	{
