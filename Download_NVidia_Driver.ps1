@@ -70,7 +70,7 @@ function UpdateNVidiaDriver
 		UseBasicParsing = $true
 	}
 	[xml]$Content = (Invoke-WebRequest @Parameters).Content
-	$CardModelName = (Get-CimInstance -ClassName CIM_VideoController | Where-Object -FilterScript {$_.AdapterDACType -ne "Internal"}).Caption.Split(" ")
+	$CardModelName = (Get-CimInstance -ClassName CIM_VideoController | Where-Object -FilterScript {$_.AdapterDACType -notmatch "Internal"}).Caption.Split(" ")
 	# Remove the first word in full model name. E.g. "NVIDIA"
 	$CardModelName = [string]$CardModelName[1..($CardModelName.Count)]
 	$ParentID = ($Content.LookupValueSearch.LookupValues.LookupValue | Where-Object -FilterScript {$_.Name -contains $CardModelName}).ParentID | Select-Object -First 1
