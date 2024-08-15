@@ -53,7 +53,7 @@ function UpdateNVidiaDriver
 		$CurrentDriverVersion = ("{0}{1}" -f $Driver.Build, $Driver.Revision).Substring(1).Insert(3,'.')
 	}
 
-	Write-Verbose -Message "`nCurrent version: $CurrentDriverVersion" -Verbose
+	Write-Verbose -Message "Current version: $CurrentDriverVersion" -Verbose
 
 	[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
@@ -97,7 +97,7 @@ function UpdateNVidiaDriver
 	if ($Data.IDS.downloadInfo.Version)
 	{
 		$LatestVersion = $Data.IDS.downloadInfo.Version
-		Write-Verbose -Message "`nLatest version: $LatestVersion" -Verbose
+		Write-Verbose -Message "Latest version: $LatestVersion" -Verbose
 	}
 	else
 	{
