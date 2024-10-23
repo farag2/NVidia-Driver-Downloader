@@ -112,48 +112,59 @@ function UpdateNVidiaDriver
 		exit
 	}
 
-	# Get the latest 7-Zip download URL
-	try
+	if (-not (Test-Path -Path "$DownloadsFolder\$LatestVersion-desktop-win10-win11-64bit-international-dch-whql.exe"))
 	{
-		# Check the internet connection
-		$Parameters = @{
-			Uri              = "https://www.google.com"
-			Method           = "Head"
-			DisableKeepAlive = $true
-			UseBasicParsing  = $true
-		}
-		Invoke-WebRequest @Parameters | Out-Null
-
+		# Downloading installer
 		try
 		{
 			$Parameters = @{
-				Uri             = "https://sourceforge.net/projects/sevenzip/best_release.json"
+				Uri             = $Data.IDS.downloadInfo.DownloadURL
+				OutFile         = "$DownloadsFolder\$LatestVersion-desktop-win10-win11-64bit-international-dch-whql.exe"
 				UseBasicParsing = $true
 				Verbose         = $true
 			}
-			$bestRelease = (Invoke-RestMethod @Parameters).platform_releases.windows.filename.replace("exe", "msi")
+			Invoke-WebRequest @Parameters
 		}
 		catch [System.Net.WebException]
 		{
-			Write-Warning -Message "sourceforge.net is down"
+			Write-Warning -Message "Connection cannot be established"
 			exit
 		}
 	}
+
+	# Get the latest 7-Zip download URL
+	try
+	{
+		$Parameters = @{
+			Uri             = "https://sourceforge.net/projects/sevenzip/best_release.json"
+			UseBasicParsing = $true
+			Verbose         = $true
+		}
+		$bestRelease = (Invoke-RestMethod @Parameters).platform_releases.windows.filename.replace("exe", "msi")
+	}
 	catch [System.Net.WebException]
 	{
-		Write-Warning -Message "No Internet connection"
+		Write-Warning -Message "Connection cannot be established"
 		exit
 	}
 
 	# Download the latest 7-Zip x64
 	$DownloadsFolder = Get-ItemPropertyValue -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders" -Name "{374DE290-123F-4565-9164-39C4925E467B}"
-	$Parameters = @{
-		Uri             = "https://unlimited.dl.sourceforge.net/project/sevenzip$($bestRelease)?viasf=1"
-		OutFile         = "$DownloadsFolder\7Zip.msi"
-		UseBasicParsing = $true
-		Verbose         = $true
+	try
+	{
+		$Parameters = @{
+			Uri             = "https://unlimited.dl.sourceforge.net/project/sevenzip$($bestRelease)?viasf=1"
+			OutFile         = "$DownloadsFolder\7Zip.msi"
+			UseBasicParsing = $true
+			Verbose         = $true
+		}
+		Invoke-WebRequest @Parameters
 	}
-	Invoke-WebRequest @Parameters
+	catch [System.Net.WebException]
+	{
+		Write-Warning -Message "Connection cannot be established"
+		exit
+	}
 
 	# Expand 7-Zip
 	$Arguments = @(
@@ -165,18 +176,6 @@ function UpdateNVidiaDriver
 
 	# Delete the installer once it completes
 	Remove-Item -Path "$DownloadsFolder\7Zip.msi" -Force
-
-	if (-not (Test-Path -Path "$DownloadsFolder\$LatestVersion-desktop-win10-win11-64bit-international-dch-whql.exe"))
-	{
-		# Downloading installer
-		$Parameters = @{
-			Uri             = $Data.IDS.downloadInfo.DownloadURL
-			OutFile         = "$DownloadsFolder\$LatestVersion-desktop-win10-win11-64bit-international-dch-whql.exe"
-			UseBasicParsing = $true
-			Verbose         = $true
-		}
-		Invoke-WebRequest @Parameters
-	}
 
 	# Extracting installer
 	# Based on 7-zip.chm
