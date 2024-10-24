@@ -132,6 +132,8 @@ function UpdateNVidiaDriver
 		}
 	}
 
+	Write-Warning -Message "Downloading..."
+
 	# Get the latest 7-Zip download URL
 	try
 	{
