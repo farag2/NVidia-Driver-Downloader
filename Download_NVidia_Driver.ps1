@@ -112,6 +112,7 @@ function UpdateNVidiaDriver
 		exit
 	}
 
+	$DownloadsFolder = Get-ItemPropertyValue -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders" -Name "{374DE290-123F-4565-9164-39C4925E467B}"
 	if (-not (Test-Path -Path "$DownloadsFolder\$LatestVersion-desktop-win10-win11-64bit-international-dch-whql.exe"))
 	{
 		# Downloading installer
@@ -152,7 +153,6 @@ function UpdateNVidiaDriver
 	}
 
 	# Download the latest 7-Zip x64
-	$DownloadsFolder = Get-ItemPropertyValue -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders" -Name "{374DE290-123F-4565-9164-39C4925E467B}"
 	try
 	{
 		$Parameters = @{
