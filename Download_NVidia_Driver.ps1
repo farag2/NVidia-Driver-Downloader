@@ -133,6 +133,7 @@ function UpdateNVidiaDriver
 	}
 
 	Write-Warning -Message "Downloading..."
+ 	Write-Warning -Message $Data.IDS.downloadInfo.DownloadURL
 
 	# Get the latest 7-Zip download URL
 	try
