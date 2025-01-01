@@ -4,7 +4,7 @@ Download the latest NVidia driver easily than ever
 
 ## Usage
 
-* Run `UpdateNVidiaDriver.ps1`
+* Run `Download_NVidia_Driver.ps1`
 * If the script finds a newer version of NVidia driver it will inform you, download, and expand setup.
 * `-Clean` provides a clean driver installation by resetting all NVidia settings to the default ones.
 
