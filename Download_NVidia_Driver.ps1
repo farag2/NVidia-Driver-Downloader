@@ -54,6 +54,7 @@ function UpdateNVidiaDriver
 	}
 
 	Write-Verbose -Message "Current version: $CurrentDriverVersion" -Verbose
+	Write-Information -MessageData "" -InformationAction Continue
 
 	[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
@@ -71,11 +72,11 @@ function UpdateNVidiaDriver
 	}
 	[xml]$Content = (Invoke-WebRequest @Parameters).Content
 	$CardModelName = (Get-CimInstance -ClassName CIM_VideoController | Where-Object -FilterScript {($_.AdapterDACType -notmatch "Internal") -and ($_.Status -eq "OK")}).Caption.Split(" ")
- 	if (-not $CardModelName)
-  	{
-   		Write-Verbose -Message "There's no active videocard in system" -Verbose
-     		exit
-     	}
+	if (-not $CardModelName)
+	{
+		Write-Verbose -Message "There's no active videocard in system" -Verbose
+		exit
+	}
 
 	# Remove the first word in full model name. E.g. "NVIDIA"
 	$CardModelName = [string]$CardModelName[1..($CardModelName.Count)]
@@ -98,6 +99,7 @@ function UpdateNVidiaDriver
 	{
 		$LatestVersion = $Data.IDS.downloadInfo.Version
 		Write-Verbose -Message "Latest version: $LatestVersion" -Verbose
+		Write-Information -MessageData "" -InformationAction Continue
 	}
 	else
 	{
@@ -208,9 +210,9 @@ function UpdateNVidiaDriver
 	}
 	Start-Process @Parameters
 
-	# Remove unneeded dependencies from setup.cfg
+	# Remove unnecessary dependencies from setup.cfg
 	[xml]$Config = Get-Content -Path "$DownloadsFolder\NVidia\setup.cfg" -Encoding UTF8 -Force
-	$Node = $Config.SelectSingleNode("//file[@name='`${{EulaHtmlFile}}']")
+	$Node = $Config.SelectSingleNode("//file[@name='`${{EulaFile}}']")
 	$Node.ParentNode.RemoveChild($Node)
 	$Node = $Config.SelectSingleNode("//file[@name='`${{FunctionalConsentFile}}']")
 	$Node.ParentNode.RemoveChild($Node)
