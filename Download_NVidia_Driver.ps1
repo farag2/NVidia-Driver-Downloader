@@ -10,22 +10,9 @@
 
 	.NOTES
 	Supports Windows 10 x64 & Windows 11 only
-
-	.EXAMPLE
-	UpdateNVidiaDriver -Clean
 #>
 function UpdateNVidiaDriver
 {
-	param
-	(
-		[Parameter(
-			Mandatory = $false,
-			ParameterSetName = "Clean"
-		)]
-		[switch]
-		$Clean
-	)
-
 	Clear-Host
 
 	# Checking Windows version
@@ -198,7 +185,7 @@ function UpdateNVidiaDriver
 		# What to extract
 		"$DownloadsFolder\$LatestVersion-desktop-win10-win11-64bit-international-dch-whql.exe",
 		# Extract these files and folders
-		"Display.Driver HDAudio NVI2 PhysX EULA.txt ListDevices.txt setup.cfg setup.exe",
+		"Display.Driver HDAudio NVI2 NVApp NVApp.MessageBus NVCpl PhysX EULA.txt ListDevices.txt setup.cfg setup.exe",
 		# Specifies a destination directory where files are to be extracted
 		"-o`"$DownloadsFolder\NVidia`""
 	)
@@ -211,33 +198,21 @@ function UpdateNVidiaDriver
 	Start-Process @Parameters
 
 	# Remove unnecessary dependencies from setup.cfg
-	[xml]$Config = Get-Content -Path "$DownloadsFolder\NVidia\setup.cfg" -Encoding UTF8 -Force
-	$Node = $Config.SelectSingleNode("//file[@name='`${{EulaFile}}']")
-	$Node.ParentNode.RemoveChild($Node)
-	$Node = $Config.SelectSingleNode("//file[@name='`${{FunctionalConsentFile}}']")
-	$Node.ParentNode.RemoveChild($Node)
-	$Node = $Config.SelectSingleNode("//file[@name='`${{PrivacyPolicyFile}}']")
-	$Node.ParentNode.RemoveChild($Node)
-	$Config.Save("$DownloadsFolder\NVidia\setup.cfg")
+	[xml]$setup = Get-Content -Path "$DownloadsFolder\NVidia\setup.cfg" -Encoding UTF8 -Force
+	($setup.setup.manifest.file | Where-Object -FilterScript {@("`${{EulaHtmlFile}}", "`${{FunctionalConsentFile}}", "`${{PrivacyPolicyFile}}") -contains $_.name }) | ForEach-Object {
+		$_.ParentNode.RemoveChild($_)
+	}
+	$setup.Save("$DownloadsFolder\NVidia\setup.cfg")
 
 	# Re-save in the UTF-8 without BOM encoding to make it work
-	Set-Content -Value (New-Object -TypeName System.Text.UTF8Encoding -ArgumentList $false).GetBytes($(Get-Content -Path "$DownloadsFolder\NVidia\setup.cfg" -Raw)) -Encoding Byte -Path "$DownloadsFolder\NVidia\setup.cfg" -Force
-
-	if ($Clean)
+	if ($Host.Version.Major -eq 5)
 	{
-		# Clean installation
-		$Arguments = @("-passive", "-noreboot", "-noeula", "-nofinish", "-clean")
+		Set-Content -Value (New-Object -TypeName System.Text.UTF8Encoding -ArgumentList $false).GetBytes($(Get-Content -Path "$DownloadsFolder\NVidia\setup.cfg" -Raw)) -Encoding Byte -Path "$DownloadsFolder\NVidia\setup.cfg" -Force
 	}
 	else
 	{
-		$Arguments = @("-passive", "-noreboot", "-noeula", "-nofinish")
+		Get-Content -Path "$DownloadsFolder\NVidia\setup.cfg" -Encoding utf8NoBOM | Set-Content -Path "$DownloadsFolder\NVidia\setup.cfg" -Encoding utf8NoBOM -Force
 	}
-
-	# Create a batch file
-	$Setupcmd = @"
-`"%~dp0setup.exe`" $($Arguments)
-"@
-	Set-Content -Path "$DownloadsFolder\NVidia\setup.cmd" -Value $Setupcmd -Encoding Default -Force
 
 	$Parameters = @{
 		Path    = "$DownloadsFolder\7zip", "$DownloadsFolder\$LatestVersion-desktop-win10-win11-64bit-international-dch-whql.exe"
@@ -247,8 +222,6 @@ function UpdateNVidiaDriver
 	Remove-Item @Parameters
 
 	Invoke-Item -Path "$DownloadsFolder\NVidia"
-
-	Write-Warning -Message "Run `"$DownloadsFolder\NVidia\setup.cmd`" as administrator to install downloaded NVidia driver"
 }
 
-UpdateNVidiaDriver -Clean
+UpdateNVidiaDriver
