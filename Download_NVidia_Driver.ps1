@@ -211,7 +211,7 @@ function UpdateNVidiaDriver
 	}
 	else
 	{
-		Get-Content -Path "$DownloadsFolder\NVidia\setup.cfg" -Encoding utf8NoBOM | Set-Content -Path "$DownloadsFolder\NVidia\setup.cfg" -Encoding utf8NoBOM -Force
+		(Get-Content -Path "$DownloadsFolder\NVidia\setup.cfg" -Encoding utf8NoBOM) | Set-Content -Path "$DownloadsFolder\NVidia\setup.cfg" -Encoding utf8NoBOM -Force
 	}
 
 	$Parameters = @{
