@@ -10,6 +10,12 @@
 
 	.NOTES
 	Supports Windows 10 x64 & Windows 11 only
+ 
+	.NOTES
+	Installer 2.0 Command Line Guide
+
+	.NOTES
+	https://docs.nvidia.com/sdk-manager/sdkm-command-line-install/index.html
 #>
 function UpdateNVidiaDriver
 {
