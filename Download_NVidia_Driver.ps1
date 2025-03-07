@@ -26,6 +26,7 @@ function UpdateNVidiaDriver
 	{
 		Write-Verbose -Message "Your Windows is unsupported. Upgrade to Windows 10 or higher" -Verbose
 		exit
+  		pause
 	}
 
 	# Checking Windows bitness
@@ -33,6 +34,7 @@ function UpdateNVidiaDriver
 	{
 		Write-Verbose -Message "Your Windows architecture is x86. x64 is required" -Verbose
 		exit
+  		pause
 	}
 
 	if (Test-Path -Path "$env:SystemRoot\System32\DriverStore\FileRepository\nv_*\nvidia-smi.exe")
@@ -69,6 +71,7 @@ function UpdateNVidiaDriver
 	{
 		Write-Verbose -Message "There's no active videocard in system" -Verbose
 		exit
+  		pause
 	}
 
 	# Remove the first word in full model name. E.g. "NVIDIA"
@@ -105,6 +108,7 @@ function UpdateNVidiaDriver
 	{
 		Write-Verbose -Message "The current installed NVidia driver is the same as the latest one" -Verbose
 		exit
+  		pause
 	}
 
 	$DownloadsFolder = Get-ItemPropertyValue -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders" -Name "{374DE290-123F-4565-9164-39C4925E467B}"
@@ -125,6 +129,7 @@ function UpdateNVidiaDriver
 		{
 			Write-Warning -Message "Connection cannot be established"
 			exit
+	  		pause
 		}
 	}
 
@@ -145,6 +150,7 @@ function UpdateNVidiaDriver
 	{
 		Write-Warning -Message "Connection cannot be established"
 		exit
+  		pause
 	}
 
 	# Download the latest 7-Zip x64
@@ -162,6 +168,7 @@ function UpdateNVidiaDriver
 	{
 		Write-Warning -Message "Connection cannot be established"
 		exit
+  		pause
 	}
 
 	# Expand 7-Zip
