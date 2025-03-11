@@ -210,22 +210,13 @@ function UpdateNVidiaDriver
 	}
 	Start-Process @Parameters
 
-	# Remove unnecessary dependencies from setup.cfg
+	<# Remove unnecessary dependencies from setup.cfg
 	[xml]$setup = Get-Content -Path "$DownloadsFolder\NVidia\setup.cfg" -Encoding UTF8 -Force
 	($setup.setup.manifest.file | Where-Object -FilterScript {@("`${{EulaHtmlFile}}", "`${{FunctionalConsentFile}}", "`${{PrivacyPolicyFile}}") -contains $_.name }) | ForEach-Object {
 		$_.ParentNode.RemoveChild($_)
 	}
 	$setup.Save("$DownloadsFolder\NVidia\setup.cfg")
-
-	# Re-save in the UTF-8 without BOM encoding to make it work
-	if ($Host.Version.Major -eq 5)
-	{
-		Set-Content -Value (New-Object -TypeName System.Text.UTF8Encoding -ArgumentList $false).GetBytes($(Get-Content -Path "$DownloadsFolder\NVidia\setup.cfg" -Raw)) -Encoding Byte -Path "$DownloadsFolder\NVidia\setup.cfg" -Force
-	}
-	else
-	{
-		(Get-Content -Path "$DownloadsFolder\NVidia\setup.cfg" -Encoding utf8NoBOM) | Set-Content -Path "$DownloadsFolder\NVidia\setup.cfg" -Encoding utf8NoBOM -Force
-	}
+	#>
 
 	$Parameters = @{
 		Path    = "$DownloadsFolder\7zip", "$DownloadsFolder\$LatestVersion-desktop-win10-win11-64bit-international-dch-whql.exe"
