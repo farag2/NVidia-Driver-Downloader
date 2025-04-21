@@ -76,8 +76,8 @@ function UpdateNVidiaDriver
 
 	# Remove the first word in full model name. E.g. "NVIDIA"
 	$CardModelName = [string]$CardModelName[1..($CardModelName.Count)]
-	$ParentID = ($Content.LookupValueSearch.LookupValues.LookupValue | Where-Object -FilterScript {$_.Name -contains $CardModelName}).ParentID | Select-Object -First 1
-	$Value = ($Content.LookupValueSearch.LookupValues.LookupValue | Where-Object -FilterScript {$_.Name -contains $CardModelName}).Value | Select-Object -First 1
+	$ParentID = ($Content.LookupValueSearch.LookupValues.LookupValue | Where-Object -FilterScript {$_.Name -match $CardModelName}).ParentID | Select-Object -First 1
+	$Value = ($Content.LookupValueSearch.LookupValues.LookupValue | Where-Object -FilterScript {$_.Name -match $CardModelName}).Value | Select-Object -First 1
 
 	# https://github.com/fyr77/EnvyUpdate/wiki/Nvidia-API
 	# osID=57 — Windows x64/Windows 11
