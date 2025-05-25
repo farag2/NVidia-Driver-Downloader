@@ -15,10 +15,8 @@ Download the latest NVidia driver easily than ever
 
 ## Links
 
-[NVidia driver update link](https://www.nvidia.ru/Download/index.aspx)
+[NVidia drivers](https://www.nvidia.ru/Download/index.aspx)
 
-Use one of these apps instead of running default Nvidia installer
+[NVIDIA GPU UEFI Firmware Update Tool](https://nvidia.custhelp.com/app/answers/list/st/5/kw/NVIDIA%20GPU%20UEFI%20Firmware%20Update%20Tool/sort/4%2C2)
 
-* [NVSlimmer](https://forums.guru3d.com/threads/nvidia-driver-slimming-utility.423072/)
-* [NVCleanstall](https://www.techpowerup.com/download/techpowerup-nvcleanstall/)
-* [NV Updater](https://www.sys-worx.net/nv-updater-eng/)
+[NVCleanstall](https://www.techpowerup.com/download/techpowerup-nvcleanstall/)
