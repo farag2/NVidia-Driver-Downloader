@@ -45,7 +45,17 @@ function UpdateNVidiaDriver
 	else
 	{
 		[System.Version]$Driver = (Get-CimInstance -ClassName Win32_VideoController | Where-Object -FilterScript {$_.Name -match "NVIDIA"}).DriverVersion
-		$CurrentDriverVersion = ("{0}{1}" -f $Driver.Build, $Driver.Revision).Substring(1).Insert(3,'.')
+  		if ($Driver)
+    		{
+      		
+			$CurrentDriverVersion = ("{0}{1}" -f $Driver.Build, $Driver.Revision).Substring(1).Insert(3,'.')
+   		}
+     		else
+       		{
+			Write-Verbose -Message "No NVdia card detected. Please install driver manually from https://www.nvidia.ru/Download/index.aspx" -Verbose
+			exit
+  			pause
+   		}
 	}
 
 	Write-Verbose -Message "Current version: $CurrentDriverVersion" -Verbose
@@ -101,6 +111,7 @@ function UpdateNVidiaDriver
 	{
 		Write-Warning -Message "Something went wrong"
 		exit
+  		pause
 	}
 
 	# Comparing installed driver version to latest driver version from Nvidia
