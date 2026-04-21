@@ -15,5 +15,7 @@ iwr https://raw.githubusercontent.com/farag2/NVidia-Driver-Downloader/refs/heads
 ## Links
 
 [NVidia drivers](https://www.nvidia.ru/Download/index.aspx)
+
 [NVIDIA GPU UEFI Firmware Update Tool](https://us.download.nvidia.com/Windows/uefi/firmware/2.0/NVIDIA_UEFI_Firmware_Updater_2.0-x64.exe)
+
 [NVCleanstall](https://www.techpowerup.com/download/techpowerup-nvcleanstall/)
