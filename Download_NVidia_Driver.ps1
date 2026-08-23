@@ -157,27 +157,29 @@ Write-Warning -Message "Downloading..."
 Write-Warning -Message $Data.IDS.downloadInfo.DownloadURL
 
 # Get the latest 7-Zip download URL
+# https://github.com/ip7z/7zip
 try
 {
 	$Parameters = @{
-		Uri             = "https://sourceforge.net/projects/sevenzip/best_release.json"
+		Uri             = "https://api.github.com/repos/ip7z/7zip/releases/latest"
 		UseBasicParsing = $true
 		Verbose         = $true
 	}
-	$bestRelease = (Invoke-RestMethod @Parameters).platform_releases.windows.filename.replace("exe", "msi")
+	$URL = ((Invoke-RestMethod @Parameters).assets | Where-Object -FilterScript {$_.name -match "x64.msi"}).browser_download_url
 }
 catch [System.Net.WebException]
 {
-	Write-Warning -Message "Cannot establish connection to https://sourceforge.net"
+	Write-Warning -Message "Cannot establish connection to https://api.github.com/repos/ip7z/7zip/releases/latest"
 	exit
 	pause
 }
 
-# Download the latest 7-Zip x64
+$DownloadsFolder = Get-ItemPropertyValue -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders" -Name "{374DE290-123F-4565-9164-39C4925E467B}"
+
 try
 {
 	$Parameters = @{
-		Uri             = "https://unlimited.dl.sourceforge.net/project/sevenzip$($bestRelease)?viasf=1"
+		Uri             = $URL
 		OutFile         = "$DownloadsFolder\7Zip.msi"
 		UseBasicParsing = $true
 		Verbose         = $true
@@ -186,7 +188,7 @@ try
 }
 catch [System.Net.WebException]
 {
-	Write-Warning -Message "Cannot establish connection to https://unlimited.dl.sourceforge.net"
+	Write-Warning -Message "Cannot establish connection to $URL"
 	exit
 	pause
 }
