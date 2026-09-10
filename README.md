@@ -4,8 +4,6 @@ Download latest available NVidia driver
 
 ## How-to
 
-* Run `Download_NVidia_Driver.ps1`
-
 ```powershell
 iwr https://raw.githubusercontent.com/farag2/NVidia-Driver-Downloader/refs/heads/main/Download_NVidia_Driver.ps1 -useb | iex
 ```
