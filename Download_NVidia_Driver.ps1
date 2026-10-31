@@ -85,6 +85,7 @@ if (-not $LookupValue)
 # dch=1 — DCH drivers
 # https://nvidia.custhelp.com/app/answers/detail/a_id/4777/~/nvidia-dch%2Fstandard-display-drivers-for-windows-10-faq
 # upCRD=0 — Game Ready Driver
+
 try
 {
 	$Parameters = @{
@@ -121,6 +122,9 @@ if ($LatestVersion -le $CurrentDriverVersion)
 	exit
 }
 
+Write-Verbose -Message "Downloading NVIDIA driver $LatestVersion" -Verbose
+Write-Information -MessageData "" -InformationAction Continue
+
 $DownloadsFolder = Get-ItemPropertyValue -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders" -Name "{374DE290-123F-4565-9164-39C4925E467B}"
 
 # Take the file name from the URL: desktop and notebook packages are named differently
@@ -150,6 +154,9 @@ if (-not (Test-Path -Path $Installer))
 		exit
 	}
 }
+
+Write-Verbose -Message "Downloading 7-Zip" -Verbose
+Write-Information -MessageData "" -InformationAction Continue
 
 # Get the latest 7-Zip download URL
 # https://github.com/ip7z/7zip
@@ -186,6 +193,9 @@ catch [System.Net.WebException]
 	pause
 }
 
+Write-Verbose -Message "Extracting $Installer" -Verbose
+Write-Information -MessageData "" -InformationAction Continue
+
 # Expand 7-Zip
 $Arguments = @(
 	"/a `"$DownloadsFolder\7Zip.msi`""
@@ -193,8 +203,6 @@ $Arguments = @(
 	"/qn"
 )
 Start-Process -FilePath "$env:SystemRoot\System32\msiexec.exe" -ArgumentList $Arguments -Wait
-
-Remove-Item -Path "$DownloadsFolder\7Zip.msi" -Force
 
 # Extracting installer
 # Based on 7-zip.chm
@@ -235,14 +243,9 @@ $Parameters = @{
 }
 Start-Process @Parameters
 
-<# Remove unnecessary dependencies from setup.cfg
-[xml]$setup = Get-Content -Path "$DownloadsFolder\NVidia\setup.cfg" -Encoding UTF8 -Force
-($setup.setup.manifest.file | Where-Object -FilterScript {@("`${{EulaHtmlFile}}", "`${{FunctionalConsentFile}}", "`${{PrivacyPolicyFile}}") -contains $_.name }) | ForEach-Object {
-	$_.ParentNode.RemoveChild($_)
-}
-$setup.Save("$DownloadsFolder\NVidia\setup.cfg")
-#>
-
-Remove-Item -Path $Installer -Force
+Remove-Item -Path $Installer, "$DownloadsFolder\7zip" -Recurse -Force
 
 Invoke-Item -Path "$DownloadsFolder\NVidia"
+
+Write-Verbose -Message "Install $DownloadsFolder\NVidia\setup.exe" -Verbose
+Write-Information -MessageData "" -InformationAction Continue
