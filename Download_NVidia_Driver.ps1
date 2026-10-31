@@ -1,6 +1,6 @@
 <#
 	.SYNOPSIS
-	Check for the latest NVIdia driver version, and if it's lower than the current one download
+	Check for the latest NVIDIA driver version, and if it's newer than the installed one, download and extract it
 
 	.NOTES
 	https://docs.nvidia.com/sdk-manager/sdkm-command-line-install/index.html
@@ -11,83 +11,80 @@
 
 Clear-Host
 
-[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-
-if ($Host.Version.Major -eq 5)
+if ($PSVersionTable.PSVersion.Major -eq 5)
 {
 	# Progress bar can significantly impact cmdlet performance
 	# https://github.com/PowerShell/PowerShell/issues/2138
 	$Script:ProgressPreference = "SilentlyContinue"
+
+	# Enable TLS 1.2 keeping already enabled protocols
+	[Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
 }
 
 # Checking Windows version
-if ([System.Version][Environment]::OSVersion.Version.ToString() -lt [System.Version]"10.0")
+if ([Environment]::OSVersion.Version.Major -lt 10)
 {
 	Write-Verbose -Message "Your Windows is unsupported. Upgrade to Windows 10 or higher" -Verbose
-	exit
 	pause
+	exit
 }
 
 # Checking Windows bitness
 if (-not [Environment]::Is64BitOperatingSystem)
 {
-	Write-Verbose -Message "The script supports X86-64 architecture based CPU only." -Verbose
-	exit
+	Write-Verbose -Message "The script supports X86-64 architecture based CPU only" -Verbose
 	pause
+	exit
 }
 
-if (Test-Path -Path "$env:SystemRoot\System32\DriverStore\FileRepository\nv_*\nvidia-smi.exe")
+# Get active NVIDIA video card. Query once and reuse for both driver version and model name
+
+# The NVIDIA System Management Interface (nvidia-smi) is a command line utility, based on top of the NVIDIA Management Library (NVML)
+[System.Version]$CurrentDriverVersion = & "$env:SystemRoot\System32\nvidia-smi.exe" --query-gpu=driver_version --format=csv,noheader
+$GPU = Get-CimInstance -ClassName Win32_VideoController | Where-Object -FilterScript {($_.Name -like "NVIDIA *") -and ($_.Status -eq "OK")} | Select-Object -First 1
+if (-not ($CurrentDriverVersion -and $GPU))
 {
-	# The NVIDIA System Management Interface (nvidia-smi) is a command line utility, based on top of the NVIDIA Management Library (NVML)
-	$CurrentDriverVersion = nvidia-smi.exe --format=csv,noheader --query-gpu=driver_version
+	Write-Verbose -Message "No active NVIDIA video card detected" -Verbose
+	pause
+	exit
 }
 else
 {
-	[System.Version]$Driver = (Get-CimInstance -ClassName Win32_VideoController | Where-Object -FilterScript {$_.Name -match "NVIDIA"}).DriverVersion
-	if ($Driver)
-	{
-		$CurrentDriverVersion = ("{0}{1}" -f $Driver.Build, $Driver.Revision).Substring(1).Insert(3,'.')
-	}
-	else
-	{
-		Write-Verbose -Message "No NVdia card detected." -Verbose
-		exit
-		pause
-	}
+	Write-Verbose -Message "No NVdia card detected." -Verbose
+	pause
+	exit
 }
 
+Write-Verbose -Message "Video card: $($GPU.Name)" -Verbose
 Write-Verbose -Message "Current version: $CurrentDriverVersion" -Verbose
 Write-Information -MessageData "" -InformationAction Continue
 
+# Checking latest driver version from Nvidia website
 try
 {
-	# Checking latest driver version from Nvidia website
 	$Parameters = @{
 		Uri             = "https://www.nvidia.com/Download/API/lookupValueSearch.aspx?TypeID=3"
-		Verbose         = $true
 		UseBasicParsing = $true
+		Verbose         = $true
 	}
-	[xml]$Content = Invoke-Restmethod @Parameters
+	[xml]$Content = Invoke-RestMethod @Parameters
 }
-catch [System.Net.WebException]
+catch
 {
-	Write-Warning -Message "Cannot establish connection to https://www.nvidia.com"
-	exit
+	Write-Warning -Message "Cannot establish connection to $($Parameters.Uri)"
 	pause
+	exit
 }
 
-$CardModelName = (Get-CimInstance -ClassName CIM_VideoController | Where-Object -FilterScript {($_.AdapterDACType -notmatch "Internal") -and ($_.Status -eq "OK")}).Caption.Split(" ")
-if (-not $CardModelName)
+# Exact match by full name ("NVIDIA RTX A4000") or by name without vendor ("GeForce RTX 4070")
+$CardModelName = $GPU.Name.Substring(7)
+$LookupValue = $Content.LookupValueSearch.LookupValues.LookupValue | Where-Object -FilterScript {($_.Name -eq $GPU.Name) -or ($_.Name -eq $CardModelName)} | Select-Object -First 1
+if (-not $LookupValue)
 {
-	Write-Verbose -Message "There's no active videocard in system" -Verbose
-	exit
+	Write-Warning -Message "$($GPU.Name) not found in NVIDIA database"
 	pause
+	exit
 }
-
-# Remove the first word in full model name. E.g. "NVIDIA"
-$CardModelName = [string]$CardModelName[1..($CardModelName.Count)]
-$ParentID = ($Content.LookupValueSearch.LookupValues.LookupValue | Where-Object -FilterScript {$_.Name -match $CardModelName}).ParentID | Select-Object -First 1
-$Value = ($Content.LookupValueSearch.LookupValues.LookupValue | Where-Object -FilterScript {$_.Name -match $CardModelName}).Value | Select-Object -First 1
 
 # osID=57 — Windows x64/Windows 11
 # languageCode=1033 — English language
@@ -97,64 +94,68 @@ $Value = ($Content.LookupValueSearch.LookupValues.LookupValue | Where-Object -Fi
 try
 {
 	$Parameters = @{
-		Uri             = "https://gfwsl.geforce.com/services_toolkit/services/com/nvidia/services/AjaxDriverService.php?func=DriverManualLookup&psid=$ParentID&pfid=$Value&osID=57&languageCode=1033&beta=null&isWHQL=1&dltype=-1&dch=1&upCRD=0"
-		Verbose         = $true
+		Uri             = "https://gfwsl.geforce.com/services_toolkit/services/com/nvidia/services/AjaxDriverService.php?func=DriverManualLookup&psid=$($LookupValue.ParentID)&pfid=$($LookupValue.Value)&osID=57&languageCode=1033&beta=null&isWHQL=1&dltype=-1&dch=1&upCRD=0"
 		UseBasicParsing = $true
+		Verbose         = $true
 	}
 	$Data = Invoke-RestMethod @Parameters
 }
-catch [System.Net.WebException]
+catch
 {
-	Write-Warning -Message "Cannot establish connection to $Data.IDS.downloadInfo.DownloadURL"
-	exit
+	Write-Warning -Message "Cannot establish connection to $($Parameters.Uri)"
 	pause
+	exit
 }
 
-if ($Data.IDS.downloadInfo.Version)
-{
-	$LatestVersion = $Data.IDS.downloadInfo.Version
-	Write-Verbose -Message "Latest version: $LatestVersion" -Verbose
-	Write-Information -MessageData "" -InformationAction Continue
-}
-else
+$DownloadInfo = @($Data.IDS)[0].downloadInfo
+if (-not $DownloadInfo.Version)
 {
 	Write-Warning -Message "Something went wrong"
-	exit
 	pause
+	exit
 }
 
+[System.Version]$LatestVersion = $DownloadInfo.Version
+Write-Verbose -Message "Latest version: $LatestVersion" -Verbose
+Write-Information -MessageData "" -InformationAction Continue
+
 # Comparing installed driver version to latest driver version from Nvidia
-if (-not $Clean -and ([System.Version]$LatestVersion -eq [System.Version]$CurrentDriverVersion))
+if ($LatestVersion -le $CurrentDriverVersion)
 {
-	Write-Verbose -Message "The current installed NVidia driver is the same as the latest one" -Verbose
-	exit
+	Write-Verbose -Message "The installed NVIDIA driver is up to date" -Verbose
 	pause
+	exit
 }
 
 $DownloadsFolder = Get-ItemPropertyValue -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders" -Name "{374DE290-123F-4565-9164-39C4925E467B}"
-if (-not (Test-Path -Path "$DownloadsFolder\$LatestVersion-desktop-win10-win11-64bit-international-dch-whql.exe"))
+
+# Take the file name from the URL: desktop and notebook packages are named differently
+$Installer = Join-Path -Path $DownloadsFolder -ChildPath $DownloadInfo.DownloadURL.Split("/")[-1]
+
+if (-not (Test-Path -Path $Installer))
 {
-	# Downloading installer
+	Write-Verbose -Message "Downloading $($DownloadInfo.DownloadURL)" -Verbose
+
 	try
 	{
 		$Parameters = @{
-			Uri             = $Data.IDS.downloadInfo.DownloadURL
-			OutFile         = "$DownloadsFolder\$LatestVersion-desktop-win10-win11-64bit-international-dch-whql.exe"
-			Verbose         = $true
+			Uri             = $DownloadInfo.DownloadURL
+			OutFile         = $Installer
 			UseBasicParsing = $true
+			Verbose         = $true
 		}
 		Invoke-WebRequest @Parameters
 	}
-	catch [System.Net.WebException]
+	catch
 	{
-		Write-Warning -Message "Cannot establish connection to $Data.IDS.downloadInfo.DownloadURL"
-		exit
+		# Do not leave a partially downloaded file, otherwise the next run skips downloading
+		Remove-Item -Path $Installer -Force -ErrorAction Ignore
+
+		Write-Warning -Message "Cannot establish connection to $($DownloadInfo.DownloadURL)"
 		pause
+		exit
 	}
 }
-
-Write-Warning -Message "Downloading..."
-Write-Warning -Message $Data.IDS.downloadInfo.DownloadURL
 
 # Get the latest 7-Zip download URL
 # https://github.com/ip7z/7zip
@@ -170,11 +171,9 @@ try
 catch [System.Net.WebException]
 {
 	Write-Warning -Message "Cannot establish connection to https://api.github.com/repos/ip7z/7zip/releases/latest"
-	exit
 	pause
+	exit
 }
-
-$DownloadsFolder = Get-ItemPropertyValue -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders" -Name "{374DE290-123F-4565-9164-39C4925E467B}"
 
 try
 {
@@ -197,9 +196,9 @@ catch [System.Net.WebException]
 $Arguments = @(
 	"/a `"$DownloadsFolder\7Zip.msi`""
 	"TARGETDIR=`"$DownloadsFolder\7zip`""
-	"/qb"
+	"/qn"
 )
-Start-Process "msiexec" -ArgumentList $Arguments -Wait
+Start-Process -FilePath "$env:SystemRoot\System32\msiexec.exe" -ArgumentList $Arguments -Wait
 
 Remove-Item -Path "$DownloadsFolder\7Zip.msi" -Force
 
@@ -217,9 +216,19 @@ $Arguments = @(
 	# Overwrite All existing files without prompt
 	"-aoa",
 	# What to extract
-	"$DownloadsFolder\$LatestVersion-desktop-win10-win11-64bit-international-dch-whql.exe",
+	"`"$Installer`"",
 	# Extract these files and folders
-	"Display.Driver HDAudio NVI2 NVApp NVApp.MessageBus NVCpl PhysX EULA.txt ListDevices.txt setup.cfg setup.exe",
+	"Display.Driver",
+	"HDAudio",
+	"NVI2",
+	"NVApp",
+	"NVApp.MessageBus",
+	"NVCpl",
+	"PhysX",
+	"EULA.txt",
+	"ListDevices.txt",
+	"setup.cfg",
+	"setup.exe",
 	# Specifies a destination directory where files are to be extracted
 	"-o`"$DownloadsFolder\NVidia`""
 )
@@ -228,6 +237,7 @@ $Parameters = @{
 	ArgumentList = $Arguments
 	NoNewWindow  = $true
 	Wait         = $true
+	PassThru     = $true
 }
 Start-Process @Parameters
 
@@ -239,11 +249,6 @@ Start-Process @Parameters
 $setup.Save("$DownloadsFolder\NVidia\setup.cfg")
 #>
 
-$Parameters = @{
-	Path    = "$DownloadsFolder\7zip", "$DownloadsFolder\$LatestVersion-desktop-win10-win11-64bit-international-dch-whql.exe"
-	Recurse = $true
-	Force   = $true
-}
-Remove-Item @Parameters
+Remove-Item -Path $Installer -Force
 
 Invoke-Item -Path "$DownloadsFolder\NVidia"
