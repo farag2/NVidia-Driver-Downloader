@@ -44,12 +44,6 @@ if (-not [Environment]::Is64BitOperatingSystem)
 $GPU = Get-CimInstance -ClassName Win32_VideoController | Where-Object -FilterScript {($_.Name -like "NVIDIA *") -and ($_.Status -eq "OK")} | Select-Object -First 1
 if (-not ($CurrentDriverVersion -and $GPU))
 {
-	Write-Verbose -Message "No active NVIDIA video card detected" -Verbose
-	pause
-	exit
-}
-else
-{
 	Write-Verbose -Message "No NVdia card detected." -Verbose
 	pause
 	exit
